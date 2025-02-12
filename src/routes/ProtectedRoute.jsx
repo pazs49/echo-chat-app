@@ -2,12 +2,30 @@ import Login from "../pages/Login";
 
 import useAuthentication from "../hooks/useAuthentication";
 
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 const ProtectedRoute = ({ children }) => {
-  useAuthentication();
-  if (false) {
-    return <>{children}</>;
-  } else {
-    return <Login />;
-  }
+  const [isLoading, setIsLoading] = useState(true);
+
+  const { checkAuth } = useAuthentication();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const navigate = useNavigate();
+
+  const handleCheckAuth = async () => {
+    const authStatus = await checkAuth();
+
+    if (!authStatus) navigate("/login");
+    setIsAuthenticated(authStatus);
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    handleCheckAuth();
+  }, []);
+
+  if (isLoading) return <div>Loading...</div>;
+
+  return isAuthenticated ? children : null;
 };
 export default ProtectedRoute;

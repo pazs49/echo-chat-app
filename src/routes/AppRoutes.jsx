@@ -15,6 +15,16 @@ const router = createBrowserRouter([
         <MainLayout />
       </ProtectedRoute>
     ),
+    children: [
+      {
+        path: "/:type/:id",
+        element: (
+          <ProtectedRoute>
+            <MainLayout />
+          </ProtectedRoute>
+        ),
+      },
+    ],
     errorElement: <Error404 />,
   },
   {
