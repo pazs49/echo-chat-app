@@ -5,6 +5,7 @@ import MainLayout from "../layouts/MainLayout";
 import ProtectedRoute from "./ProtectedRoute";
 
 import Login from "../pages/Login";
+import Register from "../pages/Register";
 import Error404 from "../pages/Error404";
 
 const router = createBrowserRouter([
@@ -30,6 +31,10 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />,
+  },
+  {
+    path: "/register",
+    element: <Register />,
   },
 ]);
 

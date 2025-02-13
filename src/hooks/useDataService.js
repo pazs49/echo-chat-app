@@ -51,6 +51,15 @@ const useDataService = () => {
     return data;
   };
 
+  const sendChannelMessageById = async (auth, channelId, message) => {
+    const data = await dataService.sendChannelMessageById(
+      auth,
+      channelId,
+      message
+    );
+    return data;
+  };
+
   const getChannelMessagesById = async (auth, channelId) => {
     const data = await dataService.getChannelMessagesById(auth, channelId);
     return data;
@@ -65,6 +74,7 @@ const useDataService = () => {
     getAllChannelsOfLoggedUser,
     getChannelDetailsViaChannelID,
     getChannelMessagesById,
+    sendChannelMessageById,
   };
 };
 export default useDataService;

@@ -104,6 +104,44 @@ const dataService = {
     } catch (error) {}
   },
 
+  sendChannelMessageById: async (auth, channelId, message) => {
+    try {
+      const data = await axios.post(
+        `${API_BASE_URL}/messages`,
+        {
+          receiver_id: channelId,
+          receiver_class: "Channel",
+          body: message,
+        },
+        {
+          headers: {
+            ...auth,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (data) {
+        localStorage.setItem(
+          "auth",
+          JSON.stringify({
+            "access-token": data.headers["access-token"],
+            client: data.headers.client,
+            expiry: data.headers.expiry,
+            uid: data.headers.uid,
+          })
+        );
+
+        console.log(localStorage.getItem("auth"));
+      }
+      return data;
+    } catch (error) {
+      console.log(
+        "Login failed",
+        error.response ? error.response.data : error.message
+      );
+    }
+  },
+
   getChannelMessagesById: async (auth, channelId) => {
     try {
       const data = await axios.get(

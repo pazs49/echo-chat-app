@@ -21,21 +21,10 @@ const ChatSidebar = () => {
 
   const [users, setUsers] = useState([]);
   const [channels, setChannels] = useState([]);
-  const [lastMessages, setLastMessages] = useState([]);
 
   const navigate = useNavigate();
 
-  const getLastMessages = async (channels) => {
-    channels.map(async (channel) => {
-      const data = await getChannelMessagesById(
-        JSON.parse(localStorage.getItem("auth")),
-        channel.id
-      );
-      setLastMessages((prev) => [...prev, data]);
-    });
-  };
-
-  const fetchAllUsers = async () => {
+  const fetchAllUsersAndSetDataUsers = async () => {
     const data = await getAllUsers();
     const users = data.data.data;
     setData(users);
@@ -43,16 +32,26 @@ const ChatSidebar = () => {
     return users;
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const allChannels = await getAllChannelsOfLoggedUser(
-        JSON.parse(localStorage.getItem("auth"))
-      );
-      setChannels(allChannels);
-    };
+  const fetchChannelsWithTheirLastMessagesAndSetChannels = async () => {
+    const allChannels = await getAllChannelsOfLoggedUser(
+      JSON.parse(localStorage.getItem("auth"))
+    );
+    const allChannelsWithMessages = await Promise.all(
+      allChannels.map(async (channel) => {
+        const messages = await getChannelMessagesById(
+          JSON.parse(localStorage.getItem("auth")),
+          channel.id
+        );
+        const lastMessage = messages[messages.length - 1];
+        return { ...channel, lastMessage };
+      })
+    );
+    setChannels(allChannelsWithMessages);
+  };
 
-    fetchData();
-    fetchAllUsers();
+  useEffect(() => {
+    fetchAllUsersAndSetDataUsers();
+    fetchChannelsWithTheirLastMessagesAndSetChannels();
   }, []);
 
   return (
@@ -64,7 +63,7 @@ const ChatSidebar = () => {
         type="text"
         placeholder="Search"
       />
-      <ul className="fixed top-12 overflow-auto no-scrollbar h-[40rem]">
+      <ul className="fixed top-12 overflow-auto no-scrollbar h-[40rem] z-[2]">
         {searchTerm.length > 0 &&
           filteredData.map((item) => (
             <li key={item.uid}>
@@ -83,9 +82,17 @@ const ChatSidebar = () => {
       <ul className="absolute top-12 overflow-auto no-scrollbar h-full w-full z-[1]">
         {channels.map((channel) => {
           return (
-            <li key={channel.id}>
+            <li
+              onClick={() => navigate(`channel-messages/${channel.id}`)}
+              key={channel.id}
+            >
               <div className="cursor-pointer bg-black p-2">
                 <p>{channel.name}</p>
+                <p>
+                  {channel.lastMessage &&
+                    channel.lastMessage.body &&
+                    channel.lastMessage.body}
+                </p>
               </div>
             </li>
           );

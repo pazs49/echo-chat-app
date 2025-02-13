@@ -39,6 +39,27 @@ const authService = {
     }
   },
 
+  register: async (email, password, password_confirmation) => {
+    try {
+      const data = await axios.post(
+        `${API_BASE_URL}/auth`,
+        {
+          email,
+          password,
+          password_confirmation,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return data;
+    } catch (error) {
+      console.log("Register failed", error.response.data);
+    }
+  },
+
   checkAuth: async (auth) => {
     try {
       const data = await axios.get(`${API_BASE_URL}/users`, {

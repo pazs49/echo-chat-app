@@ -16,14 +16,13 @@ const useSearch = () => {
     return data.filter(({ uid, id }) => {
       // return [uid, id].includes(searchTerm.toLowerCase());
       const joined = uid + " " + id;
-      counter++;
-      console.log(counter);
+
       return joined.includes(searchTerm.toLowerCase());
     });
   }, [searchTerm, data]);
 
   useEffect(() => {
-    console.log(filteredData, "Filtered Data");
+    // console.log(filteredData, "Filtered Data");
   }, [filteredData]);
 
   return { setData, searchTerm, filteredData, search, setSearchTerm };

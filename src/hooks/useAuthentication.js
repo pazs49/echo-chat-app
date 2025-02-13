@@ -21,6 +21,17 @@ const useAuthentication = () => {
     }
   };
 
+  const register = async (email, password, password_confirmation) => {
+    const data = await authService.register(
+      email,
+      password,
+      password_confirmation
+    );
+    if (data) {
+      setAuth(data);
+    }
+  };
+
   const logout = () => {
     if (localStorage.getItem("auth")) localStorage.removeItem("auth");
   };
@@ -37,7 +48,7 @@ const useAuthentication = () => {
       return JSON.parse(localStorage.getItem("auth"));
     }
   };
-  return { login, checkAuth, logout, getAuth };
+  return { login, checkAuth, logout, getAuth, register };
 };
 
 export default useAuthentication;
