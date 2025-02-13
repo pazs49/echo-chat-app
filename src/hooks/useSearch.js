@@ -10,20 +10,19 @@ const useSearch = () => {
 
   const filteredData = useMemo(() => {
     if (!searchTerm) return data;
-    // console.log(data, "data");
-    // console.log(searchTerm, "searchTerm");
-    let counter = 0;
-    return data.filter(({ uid, id }) => {
-      // return [uid, id].includes(searchTerm.toLowerCase());
-      const joined = uid + " " + id;
+    console.log(data, "data");
 
+    return data.filter(({ uid, id, name }) => {
+      let joined;
+      if (name) {
+        console.log("ch");
+        joined = name + " " + id;
+      } else {
+        joined = uid + " " + id;
+      }
       return joined.includes(searchTerm.toLowerCase());
     });
   }, [searchTerm, data]);
-
-  useEffect(() => {
-    // console.log(filteredData, "Filtered Data");
-  }, [filteredData]);
 
   return { setData, searchTerm, filteredData, search, setSearchTerm };
 };

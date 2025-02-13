@@ -30,6 +30,7 @@ const useAuthentication = () => {
     if (data) {
       setAuth(data);
     }
+    return data;
   };
 
   const logout = () => {

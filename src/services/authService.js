@@ -42,7 +42,7 @@ const authService = {
   register: async (email, password, password_confirmation) => {
     try {
       const data = await axios.post(
-        `${API_BASE_URL}/auth`,
+        `${API_BASE_URL}/auth/`,
         {
           email,
           password,
@@ -56,7 +56,10 @@ const authService = {
       );
       return data;
     } catch (error) {
-      console.log("Register failed", error.response.data);
+      return {
+        error: true,
+        message: error?.response?.data?.errors?.full_messages,
+      };
     }
   },
 

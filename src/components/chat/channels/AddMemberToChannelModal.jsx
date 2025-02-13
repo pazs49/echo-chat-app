@@ -19,63 +19,61 @@ import useDataService from "@/hooks/useDataService";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export function CreateChannelModal({ users, onSetChannels }) {
+function AddMemberToChannelModal({ channelDetails }) {
+  console.log(channelDetails, "channel details");
+  const [allUsers, setAllUsers] = useState([]);
+  const [channelMembers, setChannelMembers] = useState([]);
   const [addedUsers, setAddedUsers] = useState([]);
-  const [channelName, setChannelName] = useState("");
 
   const { setData, filteredData, search, searchTerm, setSearchTerm } =
     useSearch();
 
-  const { createChannelWithMembers, getAllChannelsOfLoggedUser } =
-    useDataService();
+  const { getAllUsers } = useDataService();
 
   const navigate = useNavigate();
 
-  const handleCreate = async () => {
-    try {
-      const data = await createChannelWithMembers(
-        JSON.parse(localStorage.getItem("auth")),
-        addedUsers,
-        channelName
-      );
-      setChannelName("");
-      setAddedUsers([]);
-      if (data) {
-        const allChannels = await getAllChannelsOfLoggedUser(
-          JSON.parse(localStorage.getItem("auth"))
-        );
-        onSetChannels(allChannels);
-        navigate("/channel-messages/" + data.id);
-      }
-    } catch (error) {
-      console.log(error);
-    }
+  const handleCreate = async () => {};
+
+  const getAllMembers = async () => {
+    const data = await getAllUsers();
+    setAllUsers(data.data.data);
+    const membersId = channelDetails.channel_members.map(
+      (member) => member.user_id
+    );
+    const members = data.data.data.filter((user) =>
+      membersId.includes(user.id)
+    );
+    console.log(members);
+    return members;
   };
 
   useEffect(() => {
-    setData(users);
+    const withoutMembers = allUsers.filter(
+      (user) => !channelMembers.includes(user)
+    );
+    setData(withoutMembers);
   }, [searchTerm]);
+
+  useEffect(() => {
+    (async () => {
+      setChannelMembers(await getAllMembers());
+    })();
+  }, [channelDetails.id]);
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="primary">+ Channel</Button>
+        <Button variant="link">{channelDetails.name}</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md bg-slate-600 text-slate-200">
         <DialogHeader>
-          <DialogTitle>Create Channel</DialogTitle>
+          <DialogTitle>Add Members To Channel</DialogTitle>
           <DialogDescription className="text-slate-200">
-            Name your channel and add members
+            Select Members To Add
           </DialogDescription>
         </DialogHeader>
         <div className="flex items-center space-x-2">
           <div className="grid flex-1 gap-2 ">
-            <Input
-              placeholder="Channel Name"
-              value={channelName}
-              onChange={(e) => setChannelName(e.target.value)}
-              className="placeholder:text-white border-none bg-slate-800 text-white focus:border-indigo-500"
-            />
             <Input
               value={searchTerm}
               onChange={search}
@@ -84,7 +82,7 @@ export function CreateChannelModal({ users, onSetChannels }) {
               className="placeholder:text-white border-none bg-slate-800 text-white focus:border-indigo-500"
             />
             {searchTerm.length > 0 && (
-              <div className="fixed top-[10.35rem] w-[90%] p-2 bg-slate-700 max-h-[20rem] overflow-y-auto no-scrollbar rounded-b-lg">
+              <div className="fixed top-[7.65rem] w-[90%] p-2 bg-slate-700 max-h-[20rem] overflow-y-auto no-scrollbar rounded-b-lg">
                 <ul className="divide-y divide-slate-500">
                   {searchTerm.length > 0 &&
                     filteredData.map((item) => (
@@ -131,11 +129,17 @@ export function CreateChannelModal({ users, onSetChannels }) {
             </div>
           </div>
         )}
+        {/* List of current members */}
+        <ul>
+          {channelMembers.map((member) => (
+            <li key={member.id}>{member.uid}</li>
+          ))}
+        </ul>
         {/*  */}
         <DialogFooter className="sm:justify-start">
           <DialogClose asChild>
             <Button onClick={handleCreate} type="button" variant="primary">
-              Create
+              Add
             </Button>
           </DialogClose>
         </DialogFooter>
@@ -143,3 +147,5 @@ export function CreateChannelModal({ users, onSetChannels }) {
     </Dialog>
   );
 }
+
+export default AddMemberToChannelModal;

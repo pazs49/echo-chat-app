@@ -12,7 +12,6 @@ const ChatBubble = ({ message, userId, type, loggedUID }) => {
       setChatPosition(message.sender.uid === loggedUID ? "ml-auto" : "");
     }
   }, []);
-  console.log(message);
   return (
     <li
       className={`flex flex-col bg-slate-600 w-fit p-2 rounded-md ${chatPosition}`}

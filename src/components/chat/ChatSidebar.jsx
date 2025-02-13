@@ -24,18 +24,23 @@ const ChatSidebar = () => {
 
   const navigate = useNavigate();
 
-  const fetchAllUsersAndSetDataUsers = async () => {
+  const fetchAllUsersAndSetUsers = async () => {
     const data = await getAllUsers();
     const users = data.data.data;
-    setData(users);
     setUsers(users);
     return users;
   };
 
-  const fetchChannelsWithTheirLastMessagesAndSetChannels = async () => {
+  const fetchAllChannels = async () => {
     const allChannels = await getAllChannelsOfLoggedUser(
       JSON.parse(localStorage.getItem("auth"))
     );
+    if (!allChannels) return;
+    return allChannels;
+  };
+
+  const fetchChannelsWithTheirLastMessagesAndSetChannels = async () => {
+    const allChannels = await fetchAllChannels();
     const allChannelsWithMessages = await Promise.all(
       allChannels.map(async (channel) => {
         const messages = await getChannelMessagesById(
@@ -50,48 +55,70 @@ const ChatSidebar = () => {
   };
 
   useEffect(() => {
-    fetchAllUsersAndSetDataUsers();
+    fetchAllUsersAndSetUsers();
     fetchChannelsWithTheirLastMessagesAndSetChannels();
   }, []);
 
+  useEffect(() => {
+    // Combining users and channels to both get searched
+    const allUsers = users;
+    const allChannels = channels;
+    const usersAndChannels = [...allUsers, ...allChannels];
+    setData(usersAndChannels);
+  }, [channels, users]);
+
   return (
-    <section className="p-2 h-full flex flex-col relative">
+    <section className="h-full flex flex-col relative">
       {/* Search */}
-      <Input
-        onChange={search}
-        className="w-full sticky top-2 max-h-8 min-h-8 z-[2] bg-yellow-200"
-        type="text"
-        placeholder="Search"
-      />
-      <ul className="fixed top-12 overflow-auto no-scrollbar h-[40rem] z-[2]">
+      <div className="p-2 border-slate-400 border-b">
+        <Input
+          onChange={search}
+          className="w-full sticky top-2 max-h-8 min-h-8 z-[2] placeholder:text-white border-none bg-slate-800 text-white focus:border-indigo-500"
+          type="text"
+          placeholder="Search"
+        />
+      </div>
+      {/* List of search results */}
+      <ul className="absolute top-12 overflow-auto no-scrollbar max-h-[40rem] z-[2] divide-y divide-slate-500 rounded-b-lg w-full">
         {searchTerm.length > 0 &&
           filteredData.map((item) => (
-            <li key={item.uid}>
-              <button
+            <li className="px-[20px] bg-slate-700" key={item.name || item.uid}>
+              <div
+                className="flex justify-between w-full cursor-pointer"
                 onClick={() => {
-                  navigate(`messages/${item.id}`);
+                  if (item.name) {
+                    navigate(`channel-messages/${item.id}`);
+                  } else {
+                    navigate(`messages/${item.id}`);
+                  }
                 }}
               >
-                {item.uid + " " + item.id}
-              </button>
+                <span>{item.name ? item.name : item.uid}</span>
+                <span className="font-semibold">
+                  {item.name ? " Channel" : " User"}
+                </span>
+              </div>
             </li>
           ))}
       </ul>
       {/* Channel List */}
 
-      <ul className="absolute top-12 overflow-auto no-scrollbar h-full w-full z-[1]">
+      <ul className="overflow-auto no-scrollbar h-full w-full z-[1] divide-y divide-slate-400">
         {channels.map((channel) => {
           return (
             <li
+              className="last:mb-[2.5rem]"
               onClick={() => navigate(`channel-messages/${channel.id}`)}
               key={channel.id}
             >
-              <div className="cursor-pointer bg-black p-2">
-                <p>{channel.name}</p>
+              <div className="cursor-pointer p-2">
+                <p className="font-semibold">{channel.name}</p>
                 <p>
+                  {/* Gets last message and renders it */}
                   {channel.lastMessage &&
                     channel.lastMessage.body &&
-                    channel.lastMessage.body}
+                    channel.lastMessage.body.substring(0, 20) +
+                      (channel.lastMessage.body.length < 20 ? "" : "...")}
                 </p>
               </div>
             </li>
@@ -99,7 +126,7 @@ const ChatSidebar = () => {
         })}
       </ul>
 
-      <div className="fixed bottom-2 z-[2]">
+      <div className="fixed bottom-2 z-[2] ml-2">
         <CreateChannelModal onSetChannels={setChannels} users={users} />
       </div>
     </section>

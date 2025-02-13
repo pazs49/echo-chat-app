@@ -28,6 +28,8 @@ const initialState = {
 const UPDATE_FIELD = "UPDATE_FIELD";
 
 const Register = () => {
+  const navigate = useNavigate();
+
   const { toast } = useToast();
   const { register } = useAuthentication();
 
@@ -56,28 +58,20 @@ const Register = () => {
         state.password,
         state.password_confirmation
       );
-      if (data) {
+      console.log(data, "data");
+      if (!data.error) {
         toast({
-          title: "Uh oh! Something went wrong.",
-          description: "There was a problem with your request.",
+          title: "Account Registered",
         });
+        navigate("/");
       } else {
         toast({
-          title: "Uh oh! Something went wrong.",
-          description: "There was a problem with your request.",
+          title: "Uh oh! Something went wrong!",
+          description: data.message,
         });
       }
-    } catch (error) {
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description: "There was a problem with your request.",
-      });
-    }
+    } catch (error) {}
   };
-
-  useEffect(() => {
-    console.log(state, "state");
-  }, [state]);
 
   return (
     <main className="flex h-screen w-screen items-center justify-center">
@@ -91,74 +85,76 @@ const Register = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4 mt-[-1rem]">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                type="email"
-                name="email"
-                id="email"
-                placeholder="john@example.com"
-                required
-                value={state.email || ""}
-                onChange={(e) => {
-                  dispatch({
-                    type: UPDATE_FIELD,
-                    payload: { ...state, email: e.target.value },
-                  });
-                }}
-              />
-            </div>
+          <form
+            action=""
+            onSubmit={(e) => {
+              e.preventDefault();
+              registerUser();
+            }}
+          >
+            <div className="space-y-4 mt-[-1rem]">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  type="email"
+                  name="email"
+                  id="email"
+                  placeholder="john@example.com"
+                  required
+                  value={state.email || ""}
+                  onChange={(e) => {
+                    dispatch({
+                      type: UPDATE_FIELD,
+                      payload: { ...state, email: e.target.value },
+                    });
+                  }}
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                type="password"
-                name="password"
-                id="password"
-                placeholder="password"
-                required
-                value={state.password || ""}
-                onChange={(e) => {
-                  dispatch({
-                    type: UPDATE_FIELD,
-                    payload: { ...state, password: e.target.value },
-                  });
-                }}
-              />
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  type="password"
+                  name="password"
+                  id="password"
+                  placeholder="password"
+                  required
+                  value={state.password || ""}
+                  onChange={(e) => {
+                    dispatch({
+                      type: UPDATE_FIELD,
+                      payload: { ...state, password: e.target.value },
+                    });
+                  }}
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password2">Confirm Password</Label>
-              <Input
-                type="password"
-                name="password2"
-                id="password2"
-                placeholder="password"
-                required
-                value={state.password_confirmation || ""}
-                onChange={(e) => {
-                  dispatch({
-                    type: UPDATE_FIELD,
-                    payload: {
-                      ...state,
-                      password_confirmation: e.target.value,
-                    },
-                  });
-                }}
-              />
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="password2">Confirm Password</Label>
+                <Input
+                  type="password"
+                  name="password2"
+                  id="password2"
+                  placeholder="password"
+                  required
+                  value={state.password_confirmation || ""}
+                  onChange={(e) => {
+                    dispatch({
+                      type: UPDATE_FIELD,
+                      payload: {
+                        ...state,
+                        password_confirmation: e.target.value,
+                      },
+                    });
+                  }}
+                />
+              </div>
 
-            <Button
-              type="button"
-              className="w-full"
-              onClick={() => {
-                registerUser();
-              }}
-            >
-              Register
-            </Button>
-          </div>
+              <Button type="submit" className="w-full">
+                Register
+              </Button>
+            </div>
+          </form>
         </CardContent>
       </Card>
     </main>

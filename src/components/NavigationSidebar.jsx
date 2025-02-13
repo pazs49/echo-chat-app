@@ -6,11 +6,12 @@ import useAuthentication from "@/hooks/useAuthentication";
 
 import { useNavigate } from "react-router-dom";
 
+const activeTabStyle = "bg-slate-400 p-2 rounded-full hover:bg-slate-300";
+
 const NavigationSidebar = ({ activeTab, onTabChange }) => {
   const { logout } = useAuthentication();
 
   const navigate = useNavigate();
-
   return (
     <>
       <ul className="p-1">
@@ -19,13 +20,13 @@ const NavigationSidebar = ({ activeTab, onTabChange }) => {
       <ul className="flex flex-col gap-2">
         <li
           onClick={() => onTabChange(0)}
-          className={`mx-auto ${activeTab === 0 && "bg-slate-400"}`}
+          className={`mx-auto ${activeTab === 0 && activeTabStyle}`}
         >
           <MessageCircle />
         </li>
         <li
           onClick={() => onTabChange(1)}
-          className={`mx-auto ${activeTab === 1 && "bg-slate-400"}`}
+          className={`mx-auto ${activeTab === 1 && activeTabStyle}`}
         >
           <NotebookPen />
         </li>

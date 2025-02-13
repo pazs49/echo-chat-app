@@ -9,13 +9,15 @@ import { useParams } from "react-router-dom";
 import useDataService from "@/hooks/useDataService";
 import useAuthentication from "@/hooks/useAuthentication";
 
+import AddMemberToChannelModal from "./channels/AddMemberToChannelModal";
+
 const ChatWindow = () => {
   const { getAuth } = useAuthentication();
   const loggedUID = getAuth().uid;
 
   const [messages, setMessages] = useState("");
-
   const [message, setMessage] = useState("");
+  const [chatDetails, setChatDetails] = useState();
 
   const messagesEndRef = useRef(null);
 
@@ -26,6 +28,8 @@ const ChatWindow = () => {
     sendMessageById,
     getChannelMessagesById,
     sendChannelMessageById,
+    getChannelDetailsViaChannelID,
+    getAllUsers,
   } = useDataService();
 
   const id = useMemo(() => {
@@ -71,8 +75,28 @@ const ChatWindow = () => {
     setMessages(data);
   };
 
+  const getChatDetails = async () => {
+    let data;
+    if (type === "messages") {
+      const allUsers = await getAllUsers(
+        JSON.parse(localStorage.getItem("auth"))
+      );
+      data = allUsers.data.data.find((user) => user.id === parseInt(idParam));
+      console.log(data, "all");
+      setChatDetails(data);
+    } else if (type === "channel-messages") {
+      data = await getChannelDetailsViaChannelID(
+        JSON.parse(localStorage.getItem("auth")),
+        idParam
+      );
+      console.log(data);
+      setChatDetails(data);
+    }
+  };
+
   useEffect(() => {
     loadMessages();
+    getChatDetails();
   }, [id]);
 
   useEffect(() => {
@@ -83,12 +107,30 @@ const ChatWindow = () => {
 
   return (
     id && (
-      <div className="flex flex-col h-full p-2">
+      <div className="flex flex-col h-full">
         <div
           ref={messagesEndRef}
           className="flex-col flex-grow overflow-y-scroll no-scrollbar"
         >
-          <ul className="space-y-2 pb-2">
+          {/* Chat Header */}
+          <div className="sticky top-0 bg-slate-600 h-[49px] w-full border-b border-slate-400 flex items-center p-2">
+            <p>
+              {/* Channels */}
+
+              {chatDetails?.name && (
+                <AddMemberToChannelModal channelDetails={chatDetails} />
+              )}
+            </p>
+            <p>
+              {/* Users */}
+              {chatDetails?.email && (
+                <Button variant="link">{chatDetails.email}</Button>
+              )}
+            </p>
+            {/* <p>{chatDetails && (chatDetails.name || chatDetails.email)}</p> */}
+          </div>
+          {/*  */}
+          <ul className="space-y-2 pb-2 p-2">
             {messages &&
               messages.map((message) => (
                 <ChatBubble
@@ -101,8 +143,9 @@ const ChatWindow = () => {
               ))}
           </ul>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 p-2">
           <Input
+            className="placeholder:text-white border-none bg-slate-800 text-white focus:border-indigo-500"
             value={message}
             onChange={(e) => {
               setMessage(e.target.value);
@@ -114,7 +157,7 @@ const ChatWindow = () => {
             }}
             placeholder="Message"
           />
-          <Button type="submit" onClick={sendMessage}>
+          <Button variant="primary" type="submit" onClick={sendMessage}>
             Send
           </Button>
         </div>
