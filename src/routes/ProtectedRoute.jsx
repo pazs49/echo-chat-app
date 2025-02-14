@@ -1,5 +1,7 @@
 import Login from "../pages/Login";
 
+import LoadingScreen from "@/components/LoadingScreen";
+
 import useAuthentication from "../hooks/useAuthentication";
 
 import { useEffect, useState } from "react";
@@ -24,7 +26,7 @@ const ProtectedRoute = ({ children }) => {
     handleCheckAuth();
   }, []);
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <LoadingScreen />;
 
   return isAuthenticated ? children : null;
 };

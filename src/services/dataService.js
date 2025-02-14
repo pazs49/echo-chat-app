@@ -89,7 +89,12 @@ const dataService = {
       console.log("Channel created: ID", data.data.data.id);
       console.log("Channel created: Owner ID", data.data.data.owner_id);
       return data.data.data;
-    } catch (error) {}
+    } catch (error) {
+      return {
+        error: true,
+        message: "Error creating channel, try again with a different name",
+      };
+    }
   },
 
   getAllChannelsOfLoggedUser: async (auth) => {
@@ -131,7 +136,7 @@ const dataService = {
           })
         );
 
-        console.log(localStorage.getItem("auth"));
+        // console.log(localStorage.getItem("auth"));
       }
       return data;
     } catch (error) {
@@ -166,6 +171,25 @@ const dataService = {
         },
       });
       return data.data.data;
+    } catch (error) {}
+  },
+
+  addMemberToChannel: async (auth, channelId, userId) => {
+    try {
+      const data = await axios.post(
+        `${API_BASE_URL}/channel/add_member`,
+        {
+          id: channelId,
+          member_id: userId,
+        },
+        {
+          headers: {
+            ...auth,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return data;
     } catch (error) {}
   },
 };

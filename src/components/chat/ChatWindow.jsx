@@ -3,7 +3,9 @@ import ChatBubble from "./ChatBubble";
 import { Input } from "@/components/ui/input";
 import { Button } from "../ui/button";
 
-import { useEffect, useState, useMemo, useRef } from "react";
+import useSyncStore from "@/store/useSyncStore";
+
+import { useEffect, useState, useMemo, useRef, useLayoutEffect } from "react";
 import { useParams } from "react-router-dom";
 
 import useDataService from "@/hooks/useDataService";
@@ -12,9 +14,12 @@ import useAuthentication from "@/hooks/useAuthentication";
 import AddMemberToChannelModal from "./channels/AddMemberToChannelModal";
 
 const ChatWindow = () => {
+  const { data: syncData } = useSyncStore();
+
   const { getAuth } = useAuthentication();
   const loggedUID = getAuth().uid;
 
+  const [isMessagesLoaded, setIsMessagesLoaded] = useState(false);
   const [messages, setMessages] = useState("");
   const [message, setMessage] = useState("");
   const [chatDetails, setChatDetails] = useState();
@@ -37,6 +42,7 @@ const ChatWindow = () => {
   }, [idParam]);
 
   const sendMessage = async () => {
+    setMessage("");
     let data;
 
     if (type === "messages") {
@@ -52,13 +58,14 @@ const ChatWindow = () => {
         message
       );
     }
-
-    console.log(data);
-    setMessage("");
+    // console.log(data);
     await loadMessages();
+    scrollDownMessages();
   };
 
   const loadMessages = async () => {
+    setIsMessagesLoaded(true);
+
     let data;
     if (type === "messages") {
       data = await getMessagesById(
@@ -71,8 +78,8 @@ const ChatWindow = () => {
         idParam
       );
     }
-    console.log(data);
     setMessages(data);
+    setIsMessagesLoaded(false);
   };
 
   const getChatDetails = async () => {
@@ -82,34 +89,44 @@ const ChatWindow = () => {
         JSON.parse(localStorage.getItem("auth"))
       );
       data = allUsers.data.data.find((user) => user.id === parseInt(idParam));
-      console.log(data, "all");
+      // console.log(data, "all");
       setChatDetails(data);
     } else if (type === "channel-messages") {
       data = await getChannelDetailsViaChannelID(
         JSON.parse(localStorage.getItem("auth")),
         idParam
       );
-      console.log(data);
+      // console.log(data);
       setChatDetails(data);
     }
   };
 
-  useEffect(() => {
-    loadMessages();
-    getChatDetails();
+  const scrollDownMessages = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  useLayoutEffect(() => {
+    (async () => {
+      await loadMessages();
+      await getChatDetails();
+      scrollDownMessages();
+    })();
   }, [id]);
 
+  // For syncing of update : chatsidebar and chatwindow
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
+    if (!isMessagesLoaded) {
+      loadMessages();
     }
-  }, [messages]);
+  }, [syncData]);
 
   return (
     id && (
       <div className="flex flex-col h-full">
         <div
-          ref={messagesEndRef}
+          // ref={messagesEndRef}
           className="flex-col flex-grow overflow-y-scroll no-scrollbar"
         >
           {/* Chat Header */}
@@ -118,7 +135,10 @@ const ChatWindow = () => {
               {/* Channels */}
 
               {chatDetails?.name && (
-                <AddMemberToChannelModal channelDetails={chatDetails} />
+                <AddMemberToChannelModal
+                  onUpdateChannel={getChatDetails}
+                  channelDetails={chatDetails}
+                />
               )}
             </p>
             <p>
@@ -142,6 +162,7 @@ const ChatWindow = () => {
                 />
               ))}
           </ul>
+          <div ref={messagesEndRef}></div>
         </div>
         <div className="flex gap-2 p-2">
           <Input

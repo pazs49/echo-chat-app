@@ -17,10 +17,10 @@ import useSearch from "@/hooks/useSearch";
 import useDataService from "@/hooks/useDataService";
 
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
-function AddMemberToChannelModal({ channelDetails }) {
-  console.log(channelDetails, "channel details");
+import { useToast } from "@/hooks/use-toast";
+
+function AddMemberToChannelModal({ channelDetails, onUpdateChannel }) {
   const [allUsers, setAllUsers] = useState([]);
   const [channelMembers, setChannelMembers] = useState([]);
   const [addedUsers, setAddedUsers] = useState([]);
@@ -28,11 +28,9 @@ function AddMemberToChannelModal({ channelDetails }) {
   const { setData, filteredData, search, searchTerm, setSearchTerm } =
     useSearch();
 
-  const { getAllUsers } = useDataService();
+  const { getAllUsers, addMemberToChannel } = useDataService();
 
-  const navigate = useNavigate();
-
-  const handleCreate = async () => {};
+  const { toast } = useToast();
 
   const getAllMembers = async () => {
     const data = await getAllUsers();
@@ -43,25 +41,58 @@ function AddMemberToChannelModal({ channelDetails }) {
     const members = data.data.data.filter((user) =>
       membersId.includes(user.id)
     );
-    console.log(members);
+    // console.log(members);
     return members;
   };
 
+  const resetModal = () => {
+    setSearchTerm("");
+    setAddedUsers([]);
+  };
+
+  const fetchAddMembersToChannel = async () => {
+    for (const user of addedUsers) {
+      const data = await addMemberToChannel(
+        JSON.parse(localStorage.getItem("auth")),
+        channelDetails.id,
+        user.id
+      );
+      console.log(data, "added member fetch");
+    }
+    await onUpdateChannel();
+    resetModal();
+  };
+
+  const handleAddMember = () => {
+    if (addedUsers.length === 0) {
+      toast({
+        title: "Error",
+        description: "Please select at least one user to add",
+        variant: "destructive",
+      });
+      return;
+    }
+    fetchAddMembersToChannel();
+  };
+
   useEffect(() => {
+    // console.log("onUpdateChannel called");
+    (async () => {
+      setChannelMembers(await getAllMembers());
+    })();
+    // console.log("added users", addedUsers);
+  }, [onUpdateChannel]);
+
+  useEffect(() => {
+    // prevent duplicates
     const withoutMembers = allUsers.filter(
-      (user) => !channelMembers.includes(user)
+      (user) => !channelMembers.includes(user) && !addedUsers.includes(user)
     );
     setData(withoutMembers);
   }, [searchTerm]);
 
-  useEffect(() => {
-    (async () => {
-      setChannelMembers(await getAllMembers());
-    })();
-  }, [channelDetails.id]);
-
   return (
-    <Dialog>
+    <Dialog key={channelMembers.length}>
       <DialogTrigger asChild>
         <Button variant="link">{channelDetails.name}</Button>
       </DialogTrigger>
@@ -89,6 +120,17 @@ function AddMemberToChannelModal({ channelDetails }) {
                       <li key={item.uid} className="p-[.5px]">
                         <button
                           onClick={() => {
+                            if (
+                              addedUsers.some((user) => user.uid === item.uid)
+                            ) {
+                              setSearchTerm("");
+                              toast({
+                                title: "Error",
+                                description: "User already added",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
                             setAddedUsers([...addedUsers, item]);
                             setSearchTerm("");
                           }}
@@ -102,10 +144,10 @@ function AddMemberToChannelModal({ channelDetails }) {
             )}
           </div>
         </div>
-        {/* Users display that has been added */}
+        {/* Displays the users that has been added */}
         {addedUsers.length > 0 && (
           <div className="mt-2 flex items-center space-x-2">
-            <div className="grid flex-1 gap-2">
+            <div className="grid flex-1 gap-2 max-h-[10rem] overflow-y-auto no-scrollbar">
               {addedUsers.map((user) => (
                 <div
                   key={user.uid}
@@ -130,15 +172,15 @@ function AddMemberToChannelModal({ channelDetails }) {
           </div>
         )}
         {/* List of current members */}
-        <ul>
+        <ul className="max-h-[10rem] overflow-y-auto no-scrollbar">
           {channelMembers.map((member) => (
             <li key={member.id}>{member.uid}</li>
           ))}
         </ul>
-        {/*  */}
+        {/* Add Button */}
         <DialogFooter className="sm:justify-start">
           <DialogClose asChild>
-            <Button onClick={handleCreate} type="button" variant="primary">
+            <Button onClick={handleAddMember} type="button" variant="primary">
               Add
             </Button>
           </DialogClose>

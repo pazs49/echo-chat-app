@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 
 const useSearch = () => {
   const [data, setData] = useState([]);
@@ -10,12 +10,10 @@ const useSearch = () => {
 
   const filteredData = useMemo(() => {
     if (!searchTerm) return data;
-    console.log(data, "data");
 
     return data.filter(({ uid, id, name }) => {
       let joined;
       if (name) {
-        console.log("ch");
         joined = name + " " + id;
       } else {
         joined = uid + " " + id;

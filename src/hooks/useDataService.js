@@ -5,7 +5,7 @@ const useDataService = () => {
     const data = await dataService.getAllUsers(
       JSON.parse(localStorage.getItem("auth"))
     );
-    console.log(data, "service");
+    // console.log(data, "service");
     return data;
   };
 
@@ -65,6 +65,12 @@ const useDataService = () => {
     return data;
   };
 
+  const addMemberToChannel = async (auth, channelId, userId) => {
+    const data = await dataService.addMemberToChannel(auth, channelId, userId);
+    console.log(data, "data added member to channel");
+    return data;
+  };
+
   return {
     getAllUsers,
     getAllUsersWithMessages,
@@ -75,6 +81,7 @@ const useDataService = () => {
     getChannelDetailsViaChannelID,
     getChannelMessagesById,
     sendChannelMessageById,
+    addMemberToChannel,
   };
 };
 export default useDataService;

@@ -1,6 +1,7 @@
 import { MessageCircle } from "lucide-react";
 import { NotebookPen } from "lucide-react";
 import { LogOut } from "lucide-react";
+import { MessageSquareHeart } from "lucide-react";
 
 import useAuthentication from "@/hooks/useAuthentication";
 
@@ -14,8 +15,9 @@ const NavigationSidebar = ({ activeTab, onTabChange }) => {
   const navigate = useNavigate();
   return (
     <>
-      <ul className="p-1">
-        <p className="text-center">Echo</p>
+      <ul className="px-1 py-2 flex flex-col items-center">
+        <MessageSquareHeart />
+        <p className="text-center">echo</p>
       </ul>
       <ul className="flex flex-col gap-2">
         <li

@@ -27,15 +27,10 @@ const authService = {
             uid: data.headers.uid,
           })
         );
-
-        console.log(localStorage.getItem("auth"));
       }
       return data;
     } catch (error) {
-      console.log(
-        "Login failed",
-        error.response ? error.response.data : error.message
-      );
+      return error;
     }
   },
 
@@ -68,13 +63,11 @@ const authService = {
       const data = await axios.get(`${API_BASE_URL}/users`, {
         headers: { ...auth, "Content-Type": "application/json" },
       });
-      console.log("Authentication:", data);
+      // console.log("Authentication:", data);
       return data;
     } catch (error) {
-      console.log("Authentication:", error);
+      // console.log("Authentication:", error);
     }
   },
-
-  // login("percyavon@example.com", "hello123");
 };
 export default authService;

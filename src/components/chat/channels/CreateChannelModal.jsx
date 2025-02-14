@@ -19,7 +19,11 @@ import useDataService from "@/hooks/useDataService";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export function CreateChannelModal({ users, onSetChannels }) {
+import { useToast } from "@/hooks/use-toast";
+
+export function CreateChannelModal({ users, onChannelCreated }) {
+  const { toast } = useToast();
+
   const [addedUsers, setAddedUsers] = useState([]);
   const [channelName, setChannelName] = useState("");
 
@@ -32,28 +36,46 @@ export function CreateChannelModal({ users, onSetChannels }) {
   const navigate = useNavigate();
 
   const handleCreate = async () => {
-    try {
-      const data = await createChannelWithMembers(
-        JSON.parse(localStorage.getItem("auth")),
-        addedUsers,
-        channelName
+    if (channelName.length < 3 || addedUsers.length === 0) {
+      toast({
+        title: "Error",
+        description:
+          channelName.length < 3
+            ? "Channel name must be at least 3 characters long"
+            : "Please select at least one member to add",
+        variant: "destructive",
+      });
+      return;
+    }
+    const data = await createChannelWithMembers(
+      JSON.parse(localStorage.getItem("auth")),
+      addedUsers,
+      channelName
+    );
+    setChannelName("");
+    setAddedUsers([]);
+    toast({
+      title: data?.error
+        ? "Error creating channel, try with a different name"
+        : "Channel created",
+      variant: data?.error ? "destructive" : "",
+    });
+    if (data?.error) return;
+    if (data) {
+      const allChannels = await getAllChannelsOfLoggedUser(
+        JSON.parse(localStorage.getItem("auth"))
       );
-      setChannelName("");
-      setAddedUsers([]);
-      if (data) {
-        const allChannels = await getAllChannelsOfLoggedUser(
-          JSON.parse(localStorage.getItem("auth"))
-        );
-        onSetChannels(allChannels);
-        navigate("/channel-messages/" + data.id);
-      }
-    } catch (error) {
-      console.log(error);
+      onChannelCreated();
+      navigate("/channel-messages/" + data.id);
     }
   };
 
   useEffect(() => {
-    setData(users);
+    // prevent duplicates
+    const withoutFutureMembers = users.filter(
+      (user) => !addedUsers.includes(user)
+    );
+    setData(withoutFutureMembers);
   }, [searchTerm]);
 
   return (
@@ -91,6 +113,17 @@ export function CreateChannelModal({ users, onSetChannels }) {
                       <li key={item.uid} className="p-[.5px]">
                         <button
                           onClick={() => {
+                            if (
+                              addedUsers.some((user) => user.uid === item.uid)
+                            ) {
+                              setSearchTerm("");
+                              toast({
+                                title: "Error",
+                                description: "User already added",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
                             setAddedUsers([...addedUsers, item]);
                             setSearchTerm("");
                           }}

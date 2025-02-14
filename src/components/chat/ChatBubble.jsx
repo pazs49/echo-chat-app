@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 
 const ChatBubble = ({ message, userId, type, loggedUID }) => {
+  // console.log(message, "message");
   const [chatPosition, setChatPosition] = useState("");
 
   useLayoutEffect(() => {
@@ -14,9 +15,14 @@ const ChatBubble = ({ message, userId, type, loggedUID }) => {
   }, []);
   return (
     <li
-      className={`flex flex-col bg-slate-600 w-fit p-2 rounded-md ${chatPosition}`}
+      className={`flex flex-col max-w-[30rem] break-words bg-slate-600 w-fit p-2 rounded-md ${chatPosition}`}
     >
       <p>{message.body}</p>
+      <p className="text-xs">
+        {type === "channel-messages" &&
+          message.sender.uid !== loggedUID &&
+          message.sender.uid}
+      </p>
     </li>
   );
 };
