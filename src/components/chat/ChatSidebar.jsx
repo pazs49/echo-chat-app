@@ -10,12 +10,14 @@ import { Button } from "../ui/button";
 import { CreateChannelModal } from "./channels/CreateChannelModal";
 
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import moment from "moment";
 
 const ChatSidebar = () => {
   const { data: syncData, updateData } = useSyncStore();
+
+  const { id: idParam } = useParams();
 
   const {
     getAllUsers,
@@ -151,7 +153,11 @@ const ChatSidebar = () => {
                 onClick={() => navigate(`channel-messages/${channel.id}`)}
                 key={channel.id}
               >
-                <div className="cursor-pointer p-2">
+                <div
+                  className={`cursor-pointer p-2 ${
+                    parseInt(idParam) === channel.id && "bg-slate-700"
+                  }`}
+                >
                   <p className="font-semibold">{channel.name}</p>
                   <div className="flex justify-between">
                     <p>

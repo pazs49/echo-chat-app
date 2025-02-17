@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "../ui/button";
 
 import useSyncStore from "@/store/useSyncStore";
+import useChatStateStore from "@/store/useChatStateStore";
 
 import { useEffect, useState, useMemo, useRef, useLayoutEffect } from "react";
 import { useParams } from "react-router-dom";
@@ -15,6 +16,7 @@ import AddMemberToChannelModal from "./channels/AddMemberToChannelModal";
 
 const ChatWindow = () => {
   const { data: syncData } = useSyncStore();
+  const { data: chatData, updateData } = useChatStateStore();
 
   const { getAuth } = useAuthentication();
   const loggedUID = getAuth().uid;
@@ -58,7 +60,6 @@ const ChatWindow = () => {
         message
       );
     }
-    // console.log(data);
     await loadMessages();
     scrollDownMessages();
   };
@@ -79,6 +80,8 @@ const ChatWindow = () => {
       );
     }
     setMessages(data);
+    updateData(data);
+
     setIsMessagesLoaded(false);
   };
 
@@ -109,8 +112,11 @@ const ChatWindow = () => {
 
   useLayoutEffect(() => {
     (async () => {
-      await loadMessages();
+      // clear inputs then load messages then scroll
+      setMessages([]);
+      setChatDetails("");
       await getChatDetails();
+      await loadMessages();
       scrollDownMessages();
     })();
   }, [id]);
@@ -122,13 +128,15 @@ const ChatWindow = () => {
     }
   }, [syncData]);
 
+  // useChatStateStore to have correct scrolldown and not prematurely fire
+  useEffect(() => {
+    scrollDownMessages();
+  }, [chatData]);
+
   return (
     id && (
       <div className="flex flex-col h-full">
-        <div
-          // ref={messagesEndRef}
-          className="flex-col flex-grow overflow-y-scroll no-scrollbar"
-        >
+        <div className="flex-col flex-grow overflow-y-scroll no-scrollbar">
           {/* Chat Header */}
           <div className="sticky top-0 bg-slate-600 h-[49px] w-full border-b border-slate-400 flex items-center p-2">
             <p>
