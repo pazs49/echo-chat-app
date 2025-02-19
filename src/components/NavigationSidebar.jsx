@@ -1,5 +1,5 @@
-import { MessageCircle } from "lucide-react";
-import { NotebookPen } from "lucide-react";
+// import { MessageCircle } from "lucide-react";
+// import { NotebookPen } from "lucide-react";
 import { CircleUser } from "lucide-react";
 import { LogOut } from "lucide-react";
 import { MessageSquareHeart } from "lucide-react";
@@ -8,7 +8,7 @@ import useAuthentication from "@/hooks/useAuthentication";
 
 import { useNavigate } from "react-router-dom";
 
-const activeTabStyle = "bg-slate-400 p-2 rounded-full hover:bg-slate-300";
+// const activeTabStyle = "bg-slate-400 p-2 rounded-full hover:bg-slate-300";
 
 const NavigationSidebar = ({ activeTab, onTabChange }) => {
   const { logout } = useAuthentication();

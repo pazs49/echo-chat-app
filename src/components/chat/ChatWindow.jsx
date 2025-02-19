@@ -111,6 +111,7 @@ const ChatWindow = () => {
   };
 
   useLayoutEffect(() => {
+    console.log("id");
     (async () => {
       // clear inputs then load messages then scroll
       setMessages([]);
@@ -123,6 +124,7 @@ const ChatWindow = () => {
 
   // For syncing of update : chatsidebar and chatwindow
   useEffect(() => {
+    console.log("loadmessages");
     if (!isMessagesLoaded) {
       loadMessages();
     }
@@ -130,6 +132,7 @@ const ChatWindow = () => {
 
   // useChatStateStore to have correct scrolldown and not prematurely fire
   useEffect(() => {
+    console.log("chatData");
     scrollDownMessages();
   }, [chatData]);
 
